@@ -217,6 +217,14 @@
       font-size: 0.78rem; color: var(--text);
       flex: 1; min-width: 80px;
     }
+    .variant-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .variant-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.45fr) 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .variant-row .btn { height: 100%; }
 
     .preview-wrap {
       border: 1px solid var(--border);
@@ -297,6 +305,7 @@
       .form-row { grid-template-columns: 1fr; }
       .form-row .full { grid-column: 1; }
       .inline-form { grid-template-columns: 1fr; }
+      .variant-row { grid-template-columns: 1fr; }
       .wp-row { grid-template-columns: 60px 1fr auto; }
       .wp-row select { grid-column: 1 / -1; }
       .wp-row-date { display: none; }
@@ -365,7 +374,7 @@
           <input type="text" id="wp-title" placeholder="Wallpaper name" />
         </div>
         <div class="field full">
-          <label>Image URL *</label>
+          <label>Primary Image URL *</label>
           <input type="url" id="wp-url" placeholder="https://…" />
           <p class="field-hint">
             Host your images in your repo under an <code style="color:var(--muted)">images/</code> folder, or use Imgur / Cloudinary.<br>
@@ -377,6 +386,15 @@
           <div class="preview-wrap" id="preview-wrap">
             <span class="preview-placeholder">Image preview</span>
           </div>
+        </div>
+        <div class="field full">
+          <label>Primary Variant Label</label>
+          <input type="text" id="wp-variant-label" placeholder="e.g. Black without text" />
+        </div>
+        <div class="field full">
+          <label>Extra Variants <span style="font-weight:400;color:var(--faint)">(optional)</span></label>
+          <div class="variant-list" id="variant-list"></div>
+          <button class="btn btn-outline btn-sm" id="variant-add-btn" type="button" style="margin-top:0.75rem">Add variant</button>
         </div>
         <div class="field full">
           <label>Category *</label>
@@ -432,17 +450,31 @@
 
   function normalizeData(data) {
     if (Array.isArray(data)) {
-      const oldWallpapers=data.map(w=>({ ...w, category:w.category||DEFAULT_CATEGORY }));
+      const oldWallpapers=data.map(w=>normalizeWallpaper(w));
       return { categories:buildCategoryList(oldWallpapers, [DEFAULT_CATEGORY]), wallpapers:oldWallpapers };
     }
     const next={ categories:data?.categories||[], wallpapers:data?.wallpapers||[] };
-    next.wallpapers=next.wallpapers.map(w=>({ ...w, category:w.category||DEFAULT_CATEGORY }));
+    next.wallpapers=next.wallpapers.map(w=>normalizeWallpaper(w));
     next.categories=buildCategoryList(next.wallpapers, next.categories);
     return next;
   }
 
+  function normalizeWallpaper(w) {
+    const variants=normalizeVariants(w);
+    return { ...w, url:variants[0]?.url||w.url||'', category:w.category||DEFAULT_CATEGORY, variants };
+  }
+
+  function normalizeVariants(w) {
+    const variants=Array.isArray(w.variants)
+      ? w.variants.filter(v=>v?.url).map(v=>({ label:v.label||'Variant', url:v.url }))
+      : [];
+    if (variants.length) return variants;
+    return w.url?[{ label:'Original', url:w.url }]:[];
+  }
+
   function buildCategoryList(items, base=[]) {
-    return [...new Set([...base, ...items.map(w=>w.category).filter(Boolean), DEFAULT_CATEGORY])];
+    const names=[...base, ...items.map(w=>w.category)].filter(Boolean);
+    return [...new Set(names.length?names:[DEFAULT_CATEGORY])];
   }
 
   function dataForSave() {
@@ -570,6 +602,30 @@
       : `<span class="preview-placeholder">Image preview</span>`;
   });
 
+  document.getElementById('variant-add-btn').addEventListener('click',()=>addVariantRow());
+
+  function addVariantRow(label='', url='') {
+    const row=document.createElement('div');
+    row.className='variant-row';
+    row.innerHTML=`
+      <input type="text" class="variant-label" placeholder="Label" value="${esc(label)}" />
+      <input type="url" class="variant-url" placeholder="https://..." value="${esc(url)}" />
+      <button class="btn btn-danger btn-sm" type="button">Remove</button>`;
+    row.querySelector('button').addEventListener('click',()=>row.remove());
+    document.getElementById('variant-list').appendChild(row);
+  }
+
+  function collectVariants(primaryUrl) {
+    const primaryLabel=document.getElementById('wp-variant-label').value.trim()||'Original';
+    const variants=[{ label:primaryLabel, url:primaryUrl }];
+    document.querySelectorAll('.variant-row').forEach(row=>{
+      const label=row.querySelector('.variant-label').value.trim()||'Variant';
+      const url=row.querySelector('.variant-url').value.trim();
+      if (url) variants.push({ label, url });
+    });
+    return variants;
+  }
+
   // ── Save
   document.getElementById('save-btn').addEventListener('click', async () => {
     const title=document.getElementById('wp-title').value.trim();
@@ -579,7 +635,8 @@
     const btn=document.getElementById('save-btn');
     btn.disabled=true; btn.textContent='↑ Publishing…';
     toast('Saving…','info',10000);
-    const wp={ id:Date.now().toString(), title, url, category, tags:[...tags], description:document.getElementById('wp-desc').value.trim(), date:new Date().toISOString().split('T')[0] };
+    const variants=collectVariants(url);
+    const wp={ id:Date.now().toString(), title, url, category, variants, tags:[...tags], description:document.getElementById('wp-desc').value.trim(), date:new Date().toISOString().split('T')[0] };
     try {
       wallpapers.unshift(wp); await saveFile(dataForSave());
       toast(`"${title}" published!`,'success');
@@ -590,8 +647,9 @@
   });
 
   function resetForm() {
-    ['wp-title','wp-url','wp-desc'].forEach(id=>document.getElementById(id).value='');
+    ['wp-title','wp-url','wp-desc','wp-variant-label'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('preview-wrap').innerHTML='<span class="preview-placeholder">Image preview</span>';
+    document.getElementById('variant-list').innerHTML='';
     tags.length=0; document.querySelectorAll('.tag-pill').forEach(p=>p.remove());
     document.getElementById('tag-input').value='';
   }
@@ -603,11 +661,11 @@
     if (!wallpapers.length) { c.innerHTML='<p class="empty-list">No wallpapers yet.</p>'; return; }
     c.innerHTML=`<div class="wp-list">${wallpapers.map((w,i)=>`
       <div class="wp-row">
-        <img class="wp-thumb" src="${esc(w.url)}" alt="${esc(w.title)}" loading="lazy" onerror="this.style.opacity='.2'" />
+        <img class="wp-thumb" src="${esc(normalizeVariants(w)[0]?.url||w.url)}" alt="${esc(w.title)}" loading="lazy" onerror="this.style.opacity='.2'" />
         <div>
           <p class="wp-row-category">${esc(w.category||DEFAULT_CATEGORY)}</p>
           <p class="wp-row-name">${esc(w.title)}</p>
-          ${w.tags?.length?`<p class="wp-row-tags">${w.tags.map(esc).join(' · ')}</p>`:''}
+          <p class="wp-row-tags">${normalizeVariants(w).length} variant${normalizeVariants(w).length!==1?'s':''}${w.tags?.length?` · ${w.tags.map(esc).join(' · ')}`:''}</p>
         </div>
         <select class="wp-category-select" data-index="${i}">
           ${categories.map(cat=>`<option value="${esc(cat)}" ${(w.category||DEFAULT_CATEGORY)===cat?'selected':''}>${esc(cat)}</option>`).join('')}
