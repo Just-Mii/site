@@ -485,8 +485,14 @@
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ message:'[admin] update wallpapers.json', content, ...(sha?{sha}:{}) })
     });
-    if (!r.ok) { const e=await r.json(); throw new Error(e.message||'Save failed'); }
-    const res=await r.json(); sha=res.content.sha;
+    const text=await r.text();
+    let res=null;
+    try { res=text?JSON.parse(text):null; } catch {}
+    if (!r.ok) {
+      throw new Error(res?.message||`GitHub save failed (${r.status})`);
+    }
+    if (!res?.content?.sha) throw new Error('GitHub returned an empty save response.');
+    sha=res.content.sha;
   }
 
   // ── Auth
