@@ -1,13 +1,46 @@
 {
   "categories": [
-    "Ayanami 1"
+    "Ayanami Space",
+    "Asuka Hide"
   ],
   "wallpapers": [
+    {
+      "id": "1779894000000",
+      "title": "Hiding Asuka",
+      "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Complet.jpg",
+      "category": "Asuka Hide",
+      "variants": [
+        {
+          "label": "Complete",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Complet.jpg"
+        },
+        {
+          "label": "Without any text",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Sans%20aucun%20text.jpg"
+        },
+        {
+          "label": "Without the second child",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Sans%20%27the%20second%20child%27.jpg"
+        },
+        {
+          "label": "Without Asuka Langley Sohryu",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Sans%20%22Asuka%20Langley%20Sohryu%22.jpg"
+        }
+      ],
+      "tags": [
+        "evangelion",
+        "asuka",
+        "asuka langley sohryu",
+        "black"
+      ],
+      "description": "",
+      "date": "2026-05-27"
+    },
     {
       "id": "1779882158149",
       "title": "Rei Ayanami",
       "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20sans%20text.png",
-      "category": "Ayanami 1",
+      "category": "Ayanami Space",
       "variants": [
         {
           "label": "Black without text",
@@ -39,7 +72,7 @@
         "rei ayanami",
         "black"
       ],
-      "description": "Rei Ayanami in the dark space",
+      "description": "Rei Ayanami in the space... and the the LCL... and the... well, you know the fanta...",
       "date": "2026-05-27"
     }
   ]
