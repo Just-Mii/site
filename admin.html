@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin YourName</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --border-focus: #555;
+      --text: #f0f0f0;
+      --muted: #888;
+      --faint: #444;
+      --danger: #e05050;
+      --success: #4caf72;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* AUTH */
+    #auth-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .auth-box { width: 100%; max-width: 420px; }
+    .auth-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.4rem;
+    }
+    .auth-sub {
+      font-size: 0.68rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 2.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+    .field { margin-bottom: 1.25rem; }
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 400;
+      outline: none;
+      transition: border-color 0.15s;
+      border-radius: 2px;
+    }
+    input:focus, textarea:focus { border-color: var(--border-focus); }
+    textarea { resize: vertical; min-height: 80px; }
+    .field-hint {
+      font-size: 0.6rem;
+      color: var(--faint);
+      margin-top: 0.4rem;
+      line-height: 1.6;
+    }
+    .field-hint a { color: var(--muted); }
+    .inline-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.7rem 1.5rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--text); color: var(--bg); border: 1px solid var(--text); }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.35; cursor: default; }
+    .btn-outline { background: none; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--border-focus); }
+    .btn-danger { background: none; color: var(--danger); border: 1px solid rgba(224,80,80,0.3); }
+    .btn-danger:hover { background: rgba(224,80,80,0.08); }
+    .btn-sm { padding: 0.45rem 0.9rem; font-size: 0.6rem; }
+
+    .auth-error {
+      font-size: 0.65rem;
+      color: var(--danger);
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* ADMIN LAYOUT */
+    #admin-screen { display: none; }
+    .admin-nav {
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,14,0.95);
+      backdrop-filter: blur(10px);
+    }
+    .admin-nav-left { display: flex; align-items: center; gap: 1.25rem; }
+    .admin-logo { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .admin-badge {
+      font-size: 0.55rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      background: #1e3a1e; color: var(--success);
+      border-radius: 2px;
+    }
+    .admin-repo {
+      font-size: 0.62rem; font-weight: 400; color: var(--faint);
+    }
+    .admin-nav-right { display: flex; gap: 0.75rem; align-items: center; }
+
+    .admin-main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+    .tab-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.9rem 1.5rem;
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 2rem;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .form-row .full { grid-column: 1/-1; }
+
+    /* Tag input */
+    .tag-wrap {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      align-items: center;
+      min-height: 42px;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+    .tag-wrap:focus-within { border-color: var(--border-focus); }
+    .tag-pill {
+      font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      background: #2a2a2a; color: var(--text);
+      display: flex; align-items: center; gap: 0.35rem;
+      border-radius: 2px;
+    }
+    .tag-pill button {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 0.75rem;
+      line-height: 1; padding: 0;
+    }
+    .tag-pill button:hover { color: var(--text); }
+    .tag-inner {
+      border: none; outline: none;
+      background: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem; color: var(--text);
+      flex: 1; min-width: 80px;
+    }
+
+    .preview-wrap {
+      border: 1px solid var(--border);
+      aspect-ratio: 16/9;
+      max-width: 380px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+    }
+    .preview-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .preview-placeholder {
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    .form-actions {
+      margin-top: 2rem;
+      display: flex; gap: 0.75rem; align-items: center;
+    }
+
+    /* Manage list */
+    .wp-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+    .wp-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 160px auto auto;
+      align-items: center; gap: 1.25rem;
+      padding: 0.9rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .wp-row:last-child { border-bottom: none; }
+    .wp-thumb { width: 72px; height: 45px; object-fit: cover; display: block; border-radius: 2px; }
+    .wp-row-name { font-size: 0.82rem; font-weight: 500; }
+    .wp-row-category { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); margin-bottom: 0.25rem; }
+    .wp-row-tags { font-size: 0.58rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 0.2rem; }
+    .wp-row-date { font-size: 0.6rem; color: var(--faint); white-space: nowrap; }
+    .category-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+    .category-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .category-row:last-child { border-bottom: none; }
+    .category-name { font-size: 0.82rem; font-weight: 500; }
+    .category-count { font-size: 0.6rem; color: var(--faint); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.08em; }
+    .empty-list {
+      padding: 3.5rem; text-align: center;
+      font-size: 0.65rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    /* Status bar */
+    .status {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%);
+      padding: 0.7rem 1.5rem;
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      display: none; align-items: center; gap: 0.75rem;
+      z-index: 500; border-radius: 2px;
+      white-space: nowrap;
+    }
+    .status.show { display: flex; }
+    .status.info { background: #222; color: var(--text); border: 1px solid var(--border); }
+    .status.success { background: #1a2e1a; color: var(--success); border: 1px solid rgba(76,175,114,0.3); }
+    .status.error { background: #2e1a1a; color: var(--danger); border: 1px solid rgba(224,80,80,0.3); }
+
+    @media (max-width: 650px) {
+      .admin-main { padding: 1.5rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-row .full { grid-column: 1; }
+      .inline-form { grid-template-columns: 1fr; }
+      .wp-row { grid-template-columns: 60px 1fr auto; }
+      .wp-row select { grid-column: 1 / -1; }
+      .wp-row-date { display: none; }
+      .category-row { grid-template-columns: 1fr; align-items: start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <p class="auth-title">YourName Admin</p>
+    <p class="auth-sub">Sign in with your GitHub Personal Access Token</p>
+
+    <div class="field">
+      <label>GitHub Username</label>
+      <input type="text" id="gh-user" placeholder="your-username" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Repository Name</label>
+      <input type="text" id="gh-repo" placeholder="your-repo" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="current-password" />
+      <p class="field-hint">
+        GitHub → Settings → Developer settings → Personal access tokens → Fine-grained<br>
+        Required permission: <strong style="color:var(--muted)">Contents</strong> (Read &amp; Write) on this repo only.<br>
+        Your token is never stored anywhere — it lives in memory only.
+      </p>
+    </div>
+
+    <button class="btn btn-primary" id="auth-btn">Sign in</button>
+    <p class="auth-error" id="auth-error">Invalid credentials. Check your token and repo name.</p>
+  </div>
+</div>
+
+<!-- ══════════ ADMIN ══════════ -->
+<div id="admin-screen">
+  <nav class="admin-nav">
+    <div class="admin-nav-left">
+      <span class="admin-logo">Admin</span>
+      <span class="admin-badge">Connected</span>
+      <span class="admin-repo" id="repo-display"></span>
+    </div>
+    <div class="admin-nav-right">
+      <a href="wallpapers.html" class="btn btn-outline btn-sm" target="_blank">View gallery ↗</a>
+      <button class="btn btn-outline btn-sm" id="logout-btn">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="admin-main">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="add">Add wallpaper</button>
+      <button class="tab-btn" data-tab="manage">Manage (<span id="count-tab">0</span>)</button>
+      <button class="tab-btn" data-tab="categories">Categories</button>
+    </div>
+
+    <!-- ADD -->
+    <div class="tab-panel active" id="tab-add">
+      <p class="section-title">New wallpaper</p>
+      <div class="form-row">
+        <div class="field full">
+          <label>Title *</label>
+          <input type="text" id="wp-title" placeholder="Wallpaper name" />
+        </div>
+        <div class="field full">
+          <label>Image URL *</label>
+          <input type="url" id="wp-url" placeholder="https://…" />
+          <p class="field-hint">
+            Host your images in your repo under an <code style="color:var(--muted)">images/</code> folder, or use Imgur / Cloudinary.<br>
+            URL must point directly to the image file (.jpg, .png, .webp…)
+          </p>
+        </div>
+        <div class="field full">
+          <label>Preview</label>
+          <div class="preview-wrap" id="preview-wrap">
+            <span class="preview-placeholder">Image preview</span>
+          </div>
+        </div>
+        <div class="field full">
+          <label>Category *</label>
+          <select id="wp-category"></select>
+          <p class="field-hint">Create and organize categories in the Categories tab.</p>
+        </div>
+        <div class="field full">
+          <label>Tags <span style="font-weight:400;color:var(--faint)">(press Enter or comma to add)</span></label>
+          <div class="tag-wrap" id="tag-wrap">
+            <input type="text" class="tag-inner" id="tag-input" placeholder="e.g. dark, nature, 4K…" />
+          </div>
+        </div>
+        <div class="field full">
+          <label>Description <span style="font-weight:400;color:var(--faint)">(optional)</span></label>
+          <textarea id="wp-desc" placeholder="A few words about this wallpaper…"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="save-btn">↑ Publish</button>
+        <button class="btn btn-outline" id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <!-- MANAGE -->
+    <div class="tab-panel" id="tab-manage">
+      <p class="section-title">Manage gallery</p>
+      <div id="list-container"><p class="empty-list">Loading…</p></div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="tab-panel" id="tab-categories">
+      <p class="section-title">Categories</p>
+      <div class="inline-form">
+        <div class="field" style="margin-bottom:0">
+          <label>New category</label>
+          <input type="text" id="category-name" placeholder="e.g. Anime, Nature, Abstract…" />
+        </div>
+        <button class="btn btn-primary" id="category-add-btn">Add</button>
+      </div>
+      <div id="category-container"><p class="empty-list">Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="status" id="status-bar"><span id="status-msg"></span></div>
+
+<script>
+  let GH_USER='', GH_REPO='', GH_TOKEN='';
+  let wallpapers=[], categories=[], sha=null;
+  const FILE='wallpapers.json';
+  const tags=[];
+  const DEFAULT_CATEGORY='Wallpapers';
+
+  function normalizeData(data) {
+    if (Array.isArray(data)) {
+      const oldWallpapers=data.map(w=>({ ...w, category:w.category||DEFAULT_CATEGORY }));
+      return { categories:buildCategoryList(oldWallpapers, [DEFAULT_CATEGORY]), wallpapers:oldWallpapers };
+    }
+    const next={ categories:data?.categories||[], wallpapers:data?.wallpapers||[] };
+    next.wallpapers=next.wallpapers.map(w=>({ ...w, category:w.category||DEFAULT_CATEGORY }));
+    next.categories=buildCategoryList(next.wallpapers, next.categories);
+    return next;
+  }
+
+  function buildCategoryList(items, base=[]) {
+    return [...new Set([...base, ...items.map(w=>w.category).filter(Boolean), DEFAULT_CATEGORY])];
+  }
+
+  function dataForSave() {
+    return { categories:buildCategoryList(wallpapers, categories), wallpapers };
+  }
+
+  function esc(v='') {
+    return String(v).replace(/[&<>"']/g, c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+
+  // ── Status
+  function toast(msg, type='info', dur=4000) {
+    const b=document.getElementById('status-bar');
+    b.className=`status show ${type}`;
+    document.getElementById('status-msg').textContent=msg;
+    clearTimeout(b._t); b._t=setTimeout(()=>b.classList.remove('show'),dur);
+  }
+
+  // ── GitHub API
+  async function gh(path, opts={}) {
+    return fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}${path}`, {
+      ...opts,
+      headers: { 'Authorization':`Bearer ${GH_TOKEN}`, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28', ...(opts.headers||{}) }
+    });
+  }
+
+  async function loadFile() {
+    const r=await gh(`/contents/${FILE}`);
+    if (r.status===404) { sha=null; return normalizeData([]); }
+    if (!r.ok) throw new Error('Cannot read wallpapers.json');
+    const d=await r.json();
+    sha=d.sha;
+    return normalizeData(JSON.parse(atob(d.content.replace(/\n/g,''))));
+  }
+
+  async function saveFile(data) {
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
+    const r=await gh(`/contents/${FILE}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ message:'[admin] update wallpapers.json', content, ...(sha?{sha}:{}) })
+    });
+    if (!r.ok) { const e=await r.json(); throw new Error(e.message||'Save failed'); }
+    const res=await r.json(); sha=res.content.sha;
+  }
+
+  // ── Auth
+  document.getElementById('auth-btn').addEventListener('click', async () => {
+    const user=document.getElementById('gh-user').value.trim();
+    const repo=document.getElementById('gh-repo').value.trim();
+    const token=document.getElementById('gh-token').value.trim();
+    const err=document.getElementById('auth-error');
+    const btn=document.getElementById('auth-btn');
+    if (!user||!repo||!token) { err.style.display='block'; err.textContent='All fields are required.'; return; }
+    btn.disabled=true; btn.textContent='Signing in…'; err.style.display='none';
+    GH_USER=user; GH_REPO=repo; GH_TOKEN=token;
+    try {
+      const r=await gh('/contents/');
+      if (!r.ok) throw 0;
+      const data=await loadFile();
+      wallpapers=data.wallpapers; categories=data.categories;
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('admin-screen').style.display='block';
+      document.getElementById('repo-display').textContent=`${user}/${repo}`;
+      renderCategorySelect(); renderList(); renderCategories(); updateCount();
+    } catch {
+      err.style.display='block';
+      GH_USER=GH_REPO=GH_TOKEN='';
+    } finally { btn.disabled=false; btn.textContent='Sign in'; }
+  });
+
+  ['gh-user','gh-repo','gh-token'].forEach(id=>
+    document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('auth-btn').click(); })
+  );
+
+  document.getElementById('logout-btn').addEventListener('click',()=>{
+    GH_USER=GH_REPO=GH_TOKEN=''; wallpapers=[]; categories=[]; sha=null;
+    document.getElementById('admin-screen').style.display='none';
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('gh-token').value='';
+  });
+
+  // ── Tabs
+  document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+    if (b.dataset.tab==='manage') renderList();
+    if (b.dataset.tab==='categories') renderCategories();
+  }));
+
+  function renderCategorySelect() {
+    const select=document.getElementById('wp-category');
+    const list=buildCategoryList(wallpapers, categories);
+    categories=list;
+    select.innerHTML=list.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+
+  // ── Tags
+  function addTag(v) {
+    v=v.trim().toLowerCase(); if (!v||tags.includes(v)) return;
+    tags.push(v);
+    const pill=document.createElement('div'); pill.className='tag-pill'; pill.dataset.v=v;
+    pill.innerHTML=`${v}<button type="button" aria-label="Remove ${v}">×</button>`;
+    pill.querySelector('button').addEventListener('click',()=>{ tags.splice(tags.indexOf(v),1); pill.remove(); });
+    document.getElementById('tag-wrap').insertBefore(pill, document.getElementById('tag-input'));
+  }
+  document.getElementById('tag-input').addEventListener('keydown',e=>{
+    if (e.key==='Enter'||e.key===',') { e.preventDefault(); addTag(e.target.value); e.target.value=''; }
+  });
+
+  // ── Preview
+  document.getElementById('wp-url').addEventListener('input',e=>{
+    const url=e.target.value.trim();
+    const box=document.getElementById('preview-wrap');
+    box.innerHTML=url
+      ? `<img src="${url}" alt="preview" onerror="this.parentElement.innerHTML='<span class=preview-placeholder>Invalid URL</span>'" />`
+      : `<span class="preview-placeholder">Image preview</span>`;
+  });
+
+  // ── Save
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    const title=document.getElementById('wp-title').value.trim();
+    const url=document.getElementById('wp-url').value.trim();
+    const category=document.getElementById('wp-category').value;
+    if (!title||!url) { toast('Title and URL are required.','error'); return; }
+    const btn=document.getElementById('save-btn');
+    btn.disabled=true; btn.textContent='↑ Publishing…';
+    toast('Saving…','info',10000);
+    const wp={ id:Date.now().toString(), title, url, category, tags:[...tags], description:document.getElementById('wp-desc').value.trim(), date:new Date().toISOString().split('T')[0] };
+    try {
+      wallpapers.unshift(wp); await saveFile(dataForSave());
+      toast(`"${title}" published!`,'success');
+      resetForm(); renderCategorySelect(); renderCategories(); updateCount();
+    } catch(e) {
+      wallpapers.shift(); toast('Error: '+e.message,'error');
+    } finally { btn.disabled=false; btn.textContent='↑ Publish'; }
+  });
+
+  function resetForm() {
+    ['wp-title','wp-url','wp-desc'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('preview-wrap').innerHTML='<span class="preview-placeholder">Image preview</span>';
+    tags.length=0; document.querySelectorAll('.tag-pill').forEach(p=>p.remove());
+    document.getElementById('tag-input').value='';
+  }
+  document.getElementById('reset-btn').addEventListener('click', resetForm);
+
+  // ── List
+  function renderList() {
+    const c=document.getElementById('list-container');
+    if (!wallpapers.length) { c.innerHTML='<p class="empty-list">No wallpapers yet.</p>'; return; }
+    c.innerHTML=`<div class="wp-list">${wallpapers.map((w,i)=>`
+      <div class="wp-row">
+        <img class="wp-thumb" src="${esc(w.url)}" alt="${esc(w.title)}" loading="lazy" onerror="this.style.opacity='.2'" />
+        <div>
+          <p class="wp-row-category">${esc(w.category||DEFAULT_CATEGORY)}</p>
+          <p class="wp-row-name">${esc(w.title)}</p>
+          ${w.tags?.length?`<p class="wp-row-tags">${w.tags.map(esc).join(' · ')}</p>`:''}
+        </div>
+        <select class="wp-category-select" data-index="${i}">
+          ${categories.map(cat=>`<option value="${esc(cat)}" ${(w.category||DEFAULT_CATEGORY)===cat?'selected':''}>${esc(cat)}</option>`).join('')}
+        </select>
+        <span class="wp-row-date">${esc(w.date||'')}</span>
+        <button class="btn btn-danger btn-sm" onclick="delWp(${i})">Delete</button>
+      </div>`).join('')}</div>`;
+    c.querySelectorAll('.wp-category-select').forEach(select=>{
+      select.addEventListener('change',()=>moveWallpaper(+select.dataset.index, select.value));
+    });
+  }
+
+  async function delWp(i) {
+    const title=wallpapers[i]?.title||'Wallpaper';
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    toast('Deleting…','info',10000);
+    try {
+      wallpapers.splice(i,1); await saveFile(dataForSave());
+      toast(`"${title}" deleted.`,'success');
+      renderList(); renderCategories(); updateCount();
+    } catch(e) { toast('Error: '+e.message,'error'); }
+  }
+
+  async function moveWallpaper(i, category) {
+    const old=wallpapers[i]?.category||DEFAULT_CATEGORY;
+    if (!wallpapers[i]||old===category) return;
+    wallpapers[i].category=category;
+    toast('Moving wallpaper…','info',10000);
+    try {
+      await saveFile(dataForSave());
+      renderList(); renderCategories();
+      toast('Wallpaper moved.','success');
+    } catch(e) {
+      wallpapers[i].category=old;
+      renderList();
+      toast('Error: '+e.message,'error');
+    }
+  }
+
+  document.getElementById('category-add-btn').addEventListener('click', addCategory);
+  document.getElementById('category-name').addEventListener('keydown', e=>{ if(e.key==='Enter') addCategory(); });
+
+  async function addCategory() {
+    const input=document.getElementById('category-name');
+    const name=input.value.trim();
+    if (!name) { toast('Category name is required.','error'); return; }
+    if (categories.some(c=>c.toLowerCase()===name.toLowerCase())) { toast('Category already exists.','error'); return; }
+    categories.push(name);
+    toast('Saving category…','info',10000);
+    try {
+      await saveFile(dataForSave());
+      input.value='';
+      renderCategorySelect(); renderCategories();
+      toast(`"${name}" created.`,'success');
+    } catch(e) {
+      categories=categories.filter(c=>c!==name);
+      toast('Error: '+e.message,'error');
+    }
+  }
+
+  function renderCategories() {
+    const c=document.getElementById('category-container');
+    categories=buildCategoryList(wallpapers, categories);
+    c.innerHTML=`<div class="category-list">${categories.map(cat=>{
+      const count=wallpapers.filter(w=>(w.category||DEFAULT_CATEGORY)===cat).length;
+      const locked=count>0||categories.length===1;
+      return `<div class="category-row">
+        <p class="category-name">${esc(cat)}</p>
+        <span class="category-count">${count} item${count!==1?'s':''}</span>
+        <button class="btn btn-danger btn-sm category-delete-btn" ${locked?'disabled':''} data-category="${esc(cat)}">Delete</button>
+      </div>`;
+    }).join('')}</div>`;
+    c.querySelectorAll('.category-delete-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>deleteCategory(btn.dataset.category));
+    });
+  }
+
+  async function deleteCategory(name) {
+    if (wallpapers.some(w=>(w.category||DEFAULT_CATEGORY)===name)) { toast('Move or delete wallpapers in this category first.','error'); return; }
+    if (!confirm(`Delete category "${name}"?`)) return;
+    const old=[...categories];
+    categories=categories.filter(c=>c!==name);
+    toast('Deleting category…','info',10000);
+    try {
+      await saveFile(dataForSave());
+      renderCategorySelect(); renderCategories();
+      toast(`"${name}" deleted.`,'success');
+    } catch(e) {
+      categories=old;
+      toast('Error: '+e.message,'error');
+    }
+  }
+
+  function updateCount() { document.getElementById('count-tab').textContent=wallpapers.length; }
+</script>
+</body>
+</html>

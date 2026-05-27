@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wallpapers YourName</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --muted: #888;
+      --faint: #444;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    nav {
+      padding: 1.5rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(10px);
+    }
+    .nav-logo {
+      font-size: 0.85rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      font-size: 0.72rem; font-weight: 400;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+    .page-header {
+      padding: 2.5rem 2.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .page-header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    #wp-count {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .filters {
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .filter-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      border-radius: 2px;
+    }
+    .filter-btn:hover { border-color: #555; color: var(--text); }
+    .filter-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    .gallery {
+      padding: 2rem 2.5rem;
+    }
+    .category-section {
+      margin-bottom: 2.5rem;
+    }
+    .category-section:last-child { margin-bottom: 0; }
+    .category-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.9rem;
+    }
+    .category-heading h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .category-heading span {
+      font-size: 0.6rem;
+      color: var(--faint);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .wp-card {
+      position: relative;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .wp-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .wp-card:hover img { transform: scale(1.04); }
+
+    .wp-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: flex-end;
+      padding: 1.25rem;
+    }
+    .wp-card:hover .wp-overlay { opacity: 1; }
+
+    .wp-info { width: 100%; display: flex; align-items: flex-end; justify-content: space-between; }
+    .wp-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .wp-tag {
+      font-size: 0.58rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-top: 0.2rem;
+    }
+    .wp-dl-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.45rem 0.8rem;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .wp-dl-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .empty-state {
+      grid-column: 1/-1;
+      padding: 5rem 2rem;
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.93);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .lightbox.open { display: flex; }
+    .lb-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 92vw;
+      max-height: 92vh;
+    }
+    .lb-img {
+      max-width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      display: block;
+    }
+    .lb-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .lb-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .lb-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .lb-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.1rem;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .lb-btn:hover { background: rgba(255,255,255,0.1); }
+
+    footer {
+      padding: 1.5rem 2.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+    footer span {
+      font-size: 0.62rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: var(--faint);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 600px) {
+      nav, .page-header, .filters { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .gallery { padding: 1.25rem; }
+      .gallery-grid { gap: 0.5rem; }
+      .category-heading { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
+      footer { padding: 1.25rem; flex-direction: column; gap: 0.4rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">YourName</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="wallpapers.html" class="active">Wallpapers</a>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Wallpapers</h1>
+    <span id="wp-count">Loading…</span>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-tag="all">All</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lb-inner">
+      <img class="lb-img" id="lb-img" src="" alt="" />
+      <div class="lb-bar">
+        <div>
+          <p class="lb-title" id="lb-title"></p>
+        </div>
+        <div class="lb-actions">
+          <a class="lb-btn" id="lb-dl" download>Download</a>
+          <button class="lb-btn" id="lb-close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© <span id="yr"></span> YourName</span>
+    <span>All rights reserved</span>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    let all = [], categories = [], activeFilter = 'all';
+    const DEFAULT_CATEGORY = 'Wallpapers';
+
+    function esc(v='') {
+      return String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    function normalizeData(data) {
+      if (Array.isArray(data)) {
+        const wallpapers = data.map(w => ({ ...w, category: w.category || DEFAULT_CATEGORY }));
+        return { categories: buildCategoryList(wallpapers, [DEFAULT_CATEGORY]), wallpapers };
+      }
+      const wallpapers = (data?.wallpapers || []).map(w => ({ ...w, category: w.category || DEFAULT_CATEGORY }));
+      return { categories: buildCategoryList(wallpapers, data?.categories || []), wallpapers };
+    }
+
+    function buildCategoryList(items, base=[]) {
+      return [...new Set([...base, ...items.map(w => w.category).filter(Boolean), DEFAULT_CATEGORY])];
+    }
+
+    async function load() {
+      try {
+        const r = await fetch('wallpapers.json?t=' + Date.now());
+        if (!r.ok) throw 0;
+        const data = normalizeData(await r.json());
+        all = data.wallpapers;
+        categories = data.categories;
+        buildFilters(); render();
+      } catch {
+        document.getElementById('gallery').innerHTML = `<div class="empty-state">No wallpapers yet — check back soon.</div>`;
+        document.getElementById('wp-count').textContent = '0 items';
+      }
+    }
+
+    function buildFilters() {
+      const tags = [...new Set(all.flatMap(w => w.tags || []))];
+      const filters = [
+        { type:'all', value:'all', label:'All' },
+        ...categories.map(c => ({ type:'category', value:c, label:c })),
+        ...tags.map(t => ({ type:'tag', value:t, label:'#' + t }))
+      ];
+      const c = document.getElementById('filters');
+      c.innerHTML = filters.map(f =>
+        `<button class="filter-btn${f.type==='all'?' active':''}" data-type="${esc(f.type)}" data-value="${esc(f.value)}">${esc(f.label)}</button>`
+      ).join('');
+      c.addEventListener('click', e => {
+        const b = e.target.closest('.filter-btn');
+        if (!b) return;
+        c.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        activeFilter = { type:b.dataset.type, value:b.dataset.value };
+        render();
+      });
+    }
+
+    function render() {
+      const list = getFilteredWallpapers();
+      document.getElementById('wp-count').textContent = `${list.length} item${list.length!==1?'s':''}`;
+      const g = document.getElementById('gallery');
+      if (!list.length) { g.innerHTML = `<div class="empty-state">Nothing in this category yet.</div>`; return; }
+      const groups = activeFilter === 'all' || activeFilter.type === 'all'
+        ? categories.map(c => ({ category:c, items:list.filter(w => (w.category||DEFAULT_CATEGORY) === c) })).filter(g => g.items.length)
+        : [{ category:filterTitle(), items:list }];
+      g.innerHTML = groups.map(group => `
+        <section class="category-section">
+          <div class="category-heading">
+            <h2>${esc(group.category)}</h2>
+            <span>${group.items.length} item${group.items.length!==1?'s':''}</span>
+          </div>
+          <div class="gallery-grid">
+            ${group.items.map(w => cardTemplate(w)).join('')}
+          </div>
+        </section>`).join('');
+
+      g.querySelectorAll('.wp-card').forEach(card => {
+        card.addEventListener('click', e => {
+          const dlBtn = e.target.closest('.wp-dl-btn');
+          if (dlBtn) { e.stopPropagation(); dl(dlBtn.dataset.url, dlBtn.dataset.name); return; }
+          openLb(list.find(w => itemKey(w) === card.dataset.id));
+        });
+      });
+    }
+
+    function getFilteredWallpapers() {
+      if (activeFilter === 'all' || activeFilter.type === 'all') return all;
+      if (activeFilter.type === 'category') return all.filter(w => (w.category||DEFAULT_CATEGORY) === activeFilter.value);
+      return all.filter(w => (w.tags||[]).includes(activeFilter.value));
+    }
+
+    function filterTitle() {
+      if (activeFilter.type === 'category') return activeFilter.value;
+      if (activeFilter.type === 'tag') return '#' + activeFilter.value;
+      return 'All';
+    }
+
+    function cardTemplate(w) {
+      return `
+        <div class="wp-card" data-id="${esc(itemKey(w))}">
+          <img src="${esc(w.url)}" alt="${esc(w.title)}" loading="lazy" />
+          <div class="wp-overlay">
+            <div class="wp-info">
+              <div>
+                <p class="wp-title">${esc(w.title)}</p>
+                ${w.tags?.length ? `<p class="wp-tag">${w.tags.map(esc).join(' · ')}</p>` : ''}
+              </div>
+              <button class="wp-dl-btn" data-url="${esc(w.url)}" data-name="${esc(w.title)}"></button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function itemKey(w) {
+      return w.id || w.url;
+    }
+
+    function dl(url, name) {
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function openLb(w) {
+      if (!w) return;
+      document.getElementById('lb-img').src = w.url;
+      document.getElementById('lb-img').alt = w.title;
+      document.getElementById('lb-title').textContent = w.title;
+      const d = document.getElementById('lb-dl');
+      d.href = w.url; d.download = w.title;
+      document.getElementById('lightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLb() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lb-close').addEventListener('click', closeLb);
+    document.getElementById('lightbox').addEventListener('click', e => { if (e.target === e.currentTarget) closeLb(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+    load();
+  </script>
+</body>
+</html>
