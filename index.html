@@ -25,7 +25,12 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
     }
+    body.page-ready { opacity: 1; transform: none; }
+    body.page-exit { opacity: 0; transform: translateY(8px); }
 
     nav {
       padding: 1.5rem 2.5rem;
@@ -234,6 +239,15 @@
 
   <script>
     document.getElementById('yr').textContent = new Date().getFullYear();
+    requestAnimationFrame(() => document.body.classList.add('page-ready'));
+    document.querySelectorAll('a[href$=".html"]').forEach(a => {
+      a.addEventListener('click', e => {
+        if (a.target || a.href === location.href) return;
+        e.preventDefault();
+        document.body.classList.add('page-exit');
+        setTimeout(() => location.href = a.href, 180);
+      });
+    });
   </script>
 
 </body>
