@@ -1,14 +1,39 @@
 {
   "categories": [
-    "Ayanami 1",
-    "Wallpapers"
+    "Ayanami 1"
   ],
   "wallpapers": [
     {
       "id": "1779882158149",
-      "title": "Rei Ayanami, Black without Text",
+      "title": "Rei Ayanami",
       "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20sans%20text.png",
       "category": "Ayanami 1",
+      "variants": [
+        {
+          "label": "Black without text",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20sans%20text.png"
+        },
+        {
+          "label": "Black text top",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20text%20haut.png"
+        },
+        {
+          "label": "Black text bottom",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20text%20bas.png"
+        },
+        {
+          "label": "White without text",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Blanc%20sans%20text.png"
+        },
+        {
+          "label": "White text top",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Blanc%20text%20haut.png"
+        },
+        {
+          "label": "White text bottom",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Blanc%20text%20bas.png"
+        }
+      ],
       "tags": [
         "evangelion",
         "rei ayanami",
