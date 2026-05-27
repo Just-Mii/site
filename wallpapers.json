@@ -2,5 +2,19 @@
   "categories": [
     "Wallpapers"
   ],
-  "wallpapers": []
+  "wallpapers": [
+    {
+      "id": "1779882158149",
+      "title": "Rei Ayanami, Black without Text",
+      "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Noir%20sans%20text.png",
+      "category": "Wallpapers",
+      "tags": [
+        "evangelion",
+        "rei ayanami",
+        "black"
+      ],
+      "description": "Rei Ayanami in the dark space",
+      "date": "2026-05-27"
+    }
+  ]
 }
