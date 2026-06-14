@@ -64,6 +64,7 @@
     input[type="text"],
     input[type="password"],
     input[type="url"],
+    input[type="file"],
     textarea,
     select {
       width: 100%;
@@ -93,6 +94,33 @@
       gap: 0.75rem;
       align-items: end;
       margin-bottom: 1.5rem;
+    }
+    .admin-tools {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(150px, auto) minmax(150px, auto);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      align-items: end;
+    }
+    .upload-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.72rem 0;
+    }
+    .toggle-field input { width: auto; }
+    .toggle-field span {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
     .btn {
@@ -221,7 +249,7 @@
     .variant-list { display: flex; flex-direction: column; gap: 0.75rem; }
     .variant-row {
       display: grid;
-      grid-template-columns: minmax(120px, 0.45fr) 1fr auto;
+      grid-template-columns: minmax(120px, 0.4fr) 1fr auto auto minmax(140px, 0.4fr) auto auto;
       gap: 0.75rem;
       align-items: center;
     }
@@ -251,20 +279,52 @@
 
     /* Manage list */
     .wp-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+    .wp-item { border-bottom: 1px solid var(--border); background: var(--surface); }
+    .wp-item:last-child { border-bottom: none; }
     .wp-row {
       display: grid;
-      grid-template-columns: 72px 1fr 160px auto auto;
+      grid-template-columns: 72px 1fr 150px auto auto auto;
       align-items: center; gap: 1.25rem;
       padding: 0.9rem 1.25rem;
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
     }
-    .wp-row:last-child { border-bottom: none; }
     .wp-thumb { width: 72px; height: 45px; object-fit: cover; display: block; border-radius: 2px; }
     .wp-row-name { font-size: 0.82rem; font-weight: 500; }
     .wp-row-category { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); margin-bottom: 0.25rem; }
     .wp-row-tags { font-size: 0.58rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 0.2rem; }
     .wp-row-date { font-size: 0.6rem; color: var(--faint); white-space: nowrap; }
+    .wp-edit {
+      padding: 1.25rem;
+      border-top: 1px solid var(--border);
+      background: #121212;
+    }
+    .edit-variant-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .edit-variant-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.4fr) 1fr auto auto minmax(140px, 0.4fr) auto auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .edit-variant-row .btn { height: 100%; }
+    .edit-preview {
+      border: 1px solid var(--border);
+      aspect-ratio: 16/9;
+      max-width: 320px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .edit-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .category-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: end;
+    }
     .category-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
     .category-row {
       display: grid;
@@ -306,10 +366,12 @@
       .form-row { grid-template-columns: 1fr; }
       .form-row .full { grid-column: 1; }
       .inline-form { grid-template-columns: 1fr; }
+      .admin-tools, .upload-row, .category-actions { grid-template-columns: 1fr; }
       .variant-row { grid-template-columns: 1fr; }
       .wp-row { grid-template-columns: 60px 1fr auto; }
       .wp-row select { grid-column: 1 / -1; }
       .wp-row-date { display: none; }
+      .edit-variant-row { grid-template-columns: 1fr; }
       .category-row { grid-template-columns: 1fr; align-items: start; }
     }
   </style>
@@ -377,9 +439,13 @@
         <div class="field full">
           <label>Primary Image URL *</label>
           <input type="url" id="wp-url" placeholder="https://…" />
+          <div class="upload-row" style="margin-top:0.75rem">
+            <input type="file" id="wp-upload" accept="image/*" />
+            <button class="btn btn-outline btn-sm" id="wp-upload-btn" type="button">Upload</button>
+          </div>
           <p class="field-hint">
             Host your images in your repo under an <code style="color:var(--muted)">images/</code> folder, or use Imgur / Cloudinary.<br>
-            URL must point directly to the image file (.jpg, .png, .webp…)
+            URL must point directly to the image file (.jpg, .png, .webp…), or upload into this repo.
           </p>
         </div>
         <div class="field full">
@@ -391,6 +457,32 @@
         <div class="field full">
           <label>Primary Variant Label</label>
           <input type="text" id="wp-variant-label" placeholder="e.g. Black without text" />
+        </div>
+        <div class="field full">
+          <label class="toggle-field">
+            <input type="checkbox" id="wp-featured" />
+            <span>Featured wallpaper</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Resolution</label>
+          <input type="text" id="wp-resolution" placeholder="e.g. 3840x2160" />
+        </div>
+        <div class="field">
+          <label>Source / Tool</label>
+          <input type="text" id="wp-source" placeholder="e.g. Photoshop, Blender" />
+        </div>
+        <div class="field">
+          <label>Character / Franchise</label>
+          <input type="text" id="wp-character" placeholder="e.g. Rei Ayanami / Evangelion" />
+        </div>
+        <div class="field">
+          <label>Color Theme</label>
+          <input type="text" id="wp-theme" placeholder="e.g. black, white, space" />
+        </div>
+        <div class="field full">
+          <label>Recommended For</label>
+          <input type="text" id="wp-recommended" placeholder="e.g. desktop, mobile, ultrawide" />
         </div>
         <div class="field full">
           <label>Extra Variants <span style="font-weight:400;color:var(--faint)">(optional)</span></label>
@@ -422,6 +514,17 @@
     <!-- MANAGE -->
     <div class="tab-panel" id="tab-manage">
       <p class="section-title">Manage gallery</p>
+      <div class="admin-tools">
+        <input type="search" id="manage-search" placeholder="Search title, tag, category..." autocomplete="off" />
+        <select id="manage-category-filter"></select>
+        <select id="manage-sort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title">Title A-Z</option>
+          <option value="category">Category A-Z</option>
+          <option value="featured">Featured first</option>
+        </select>
+      </div>
       <div id="list-container"><p class="empty-list">Loading…</p></div>
     </div>
 
@@ -435,6 +538,17 @@
         </div>
         <button class="btn btn-primary" id="category-add-btn">Add</button>
       </div>
+      <div class="category-actions">
+        <div class="field" style="margin-bottom:0">
+          <label>Rename / merge from</label>
+          <select id="category-from"></select>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>New or existing name</label>
+          <input type="text" id="category-to" placeholder="Category name" />
+        </div>
+        <button class="btn btn-outline" id="category-rename-btn">Apply</button>
+      </div>
       <div id="category-container"><p class="empty-list">Loading…</p></div>
     </div>
   </div>
@@ -445,6 +559,8 @@
 <script>
   let GH_USER='', GH_REPO='', GH_TOKEN='';
   let wallpapers=[], categories=[], sha=null;
+  let editingIndex=null;
+  let manageQuery='', manageCategory='all', manageSort='newest';
   const FILE='wallpapers.json';
   const tags=[];
   const DEFAULT_CATEGORY='Wallpapers';
@@ -462,7 +578,15 @@
 
   function normalizeWallpaper(w) {
     const variants=normalizeVariants(w);
-    return { ...w, url:variants[0]?.url||w.url||'', category:w.category||DEFAULT_CATEGORY, variants };
+    return {
+      ...w,
+      url:variants[0]?.url||w.url||'',
+      category:w.category||DEFAULT_CATEGORY,
+      tags:Array.isArray(w.tags)?w.tags:[],
+      featured:!!w.featured,
+      metadata:w.metadata||{},
+      variants
+    };
   }
 
   function normalizeVariants(w) {
@@ -484,6 +608,52 @@
 
   function esc(v='') {
     return String(v).replace(/[&<>"']/g, c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+
+  function uniq(items) {
+    return [...new Set(items)];
+  }
+
+  function slug(v='wallpaper') {
+    return String(v).toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'wallpaper';
+  }
+
+  function extFromFile(file) {
+    const fromName=file?.name?.match(/\.([a-z0-9]+)$/i)?.[1];
+    const fromType=file?.type?.split('/')[1];
+    return (fromName||fromType||'png').toLowerCase().replace('jpeg','jpg');
+  }
+
+  function rawImageUrl(path) {
+    return `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/refs/heads/main/${path.split('/').map(encodeURIComponent).join('/')}`;
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result).split(',')[1]);
+      reader.onerror=()=>reject(new Error('Could not read image file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadImageFile(file, title='wallpaper') {
+    if (!file) throw new Error('Choose an image file first.');
+    if (!file.type.startsWith('image/')) throw new Error('Only image files can be uploaded.');
+    const path=`images/${slug(title)}-${Date.now()}.${extFromFile(file)}`;
+    const content=await fileToBase64(file);
+    const r=await gh(`/contents/${path}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ message:`[admin] upload ${path}`, content })
+    });
+    const text=await r.text();
+    let res=null;
+    try { res=text?JSON.parse(text):null; } catch {}
+    if (!r.ok) throw new Error(res?.message||`Image upload failed (${r.status})`);
+    return rawImageUrl(path);
   }
 
   // ── Status
@@ -546,7 +716,7 @@
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('admin-screen').style.display='block';
       document.getElementById('repo-display').textContent=`${user}/${repo}`;
-      renderCategorySelect(); renderList(); renderCategories(); updateCount();
+      renderCategorySelect(); renderManageControls(); renderList(); renderCategories(); updateCount();
     } catch {
       err.style.display='block';
       GH_USER=GH_REPO=GH_TOKEN='';
@@ -559,6 +729,7 @@
 
   document.getElementById('logout-btn').addEventListener('click',()=>{
     GH_USER=GH_REPO=GH_TOKEN=''; wallpapers=[]; categories=[]; sha=null;
+    editingIndex=null;
     document.getElementById('admin-screen').style.display='none';
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('gh-token').value='';
@@ -570,9 +741,23 @@
     document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
     b.classList.add('active');
     document.getElementById('tab-'+b.dataset.tab).classList.add('active');
-    if (b.dataset.tab==='manage') renderList();
-    if (b.dataset.tab==='categories') renderCategories();
+    if (b.dataset.tab==='manage') { renderManageControls(); renderList(); }
+    if (b.dataset.tab==='categories') { renderManageControls(); renderCategories(); }
   }));
+
+  document.getElementById('manage-search').addEventListener('input',e=>{
+    manageQuery=e.target.value.trim().toLowerCase();
+    renderList();
+  });
+  document.getElementById('manage-category-filter').addEventListener('change',e=>{
+    manageCategory=e.target.value;
+    editingIndex=null;
+    renderList();
+  });
+  document.getElementById('manage-sort').addEventListener('change',e=>{
+    manageSort=e.target.value;
+    renderList();
+  });
 
   function renderCategorySelect() {
     const select=document.getElementById('wp-category');
@@ -581,13 +766,30 @@
     select.innerHTML=list.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
   }
 
+  function renderManageControls() {
+    const cat=document.getElementById('manage-category-filter');
+    if (cat) {
+      const current=manageCategory;
+      cat.innerHTML=`<option value="all">All categories</option>${categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}`;
+      cat.value=categories.includes(current)?current:'all';
+      manageCategory=cat.value;
+    }
+    const from=document.getElementById('category-from');
+    if (from) from.innerHTML=categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+
   // ── Tags
   function addTag(v) {
     v=v.trim().toLowerCase(); if (!v||tags.includes(v)) return;
     tags.push(v);
     const pill=document.createElement('div'); pill.className='tag-pill'; pill.dataset.v=v;
-    pill.innerHTML=`${v}<button type="button" aria-label="Remove ${v}">×</button>`;
-    pill.querySelector('button').addEventListener('click',()=>{ tags.splice(tags.indexOf(v),1); pill.remove(); });
+    const label=document.createTextNode(v);
+    const remove=document.createElement('button');
+    remove.type='button';
+    remove.setAttribute('aria-label',`Remove ${v}`);
+    remove.textContent='×';
+    remove.addEventListener('click',()=>{ tags.splice(tags.indexOf(v),1); pill.remove(); });
+    pill.append(label, remove);
     document.getElementById('tag-wrap').insertBefore(pill, document.getElementById('tag-input'));
   }
   document.getElementById('tag-input').addEventListener('keydown',e=>{
@@ -595,12 +797,51 @@
   });
 
   // ── Preview
+  function previewPlaceholder(text='Image preview') {
+    const span=document.createElement('span');
+    span.className='preview-placeholder';
+    span.textContent=text;
+    return span;
+  }
+
+  function showPreview(box, url) {
+    if (!url) {
+      box.replaceChildren(previewPlaceholder());
+      return;
+    }
+    const img=document.createElement('img');
+    img.src=url;
+    img.alt='preview';
+    img.onerror=()=>box.replaceChildren(previewPlaceholder('Invalid URL'));
+    box.replaceChildren(img);
+  }
+
+  function setUrlInput(input, url) {
+    input.value=url;
+    input.dispatchEvent(new Event('input', { bubbles:true }));
+  }
+
   document.getElementById('wp-url').addEventListener('input',e=>{
     const url=e.target.value.trim();
     const box=document.getElementById('preview-wrap');
-    box.innerHTML=url
-      ? `<img src="${url}" alt="preview" onerror="this.parentElement.innerHTML='<span class=preview-placeholder>Invalid URL</span>'" />`
-      : `<span class="preview-placeholder">Image preview</span>`;
+    showPreview(box, url);
+  });
+
+  document.getElementById('wp-upload-btn').addEventListener('click', async ()=>{
+    const file=document.getElementById('wp-upload').files[0];
+    const title=document.getElementById('wp-title').value.trim()||'wallpaper';
+    const btn=document.getElementById('wp-upload-btn');
+    btn.disabled=true; btn.textContent='Uploading...';
+    toast('Uploading image...','info',10000);
+    try {
+      const url=await uploadImageFile(file, title);
+      setUrlInput(document.getElementById('wp-url'), url);
+      toast('Image uploaded.','success');
+    } catch(e) {
+      toast('Error: '+e.message,'error');
+    } finally {
+      btn.disabled=false; btn.textContent='Upload';
+    }
   });
 
   document.getElementById('variant-add-btn').addEventListener('click',()=>addVariantRow());
@@ -611,8 +852,33 @@
     row.innerHTML=`
       <input type="text" class="variant-label" placeholder="Label" value="${esc(label)}" />
       <input type="url" class="variant-url" placeholder="https://..." value="${esc(url)}" />
+      <button class="btn btn-outline btn-sm variant-up-btn" type="button">Up</button>
+      <button class="btn btn-outline btn-sm variant-down-btn" type="button">Down</button>
+      <input type="file" class="variant-upload" accept="image/*" />
+      <button class="btn btn-outline btn-sm variant-upload-btn" type="button">Upload</button>
       <button class="btn btn-danger btn-sm" type="button">Remove</button>`;
-    row.querySelector('button').addEventListener('click',()=>row.remove());
+    row.querySelector('.variant-up-btn').addEventListener('click',()=>{
+      if (row.previousElementSibling) row.parentElement.insertBefore(row, row.previousElementSibling);
+    });
+    row.querySelector('.variant-down-btn').addEventListener('click',()=>{
+      if (row.nextElementSibling) row.parentElement.insertBefore(row.nextElementSibling, row);
+    });
+    row.querySelector('.variant-upload-btn').addEventListener('click',async()=>{
+      const file=row.querySelector('.variant-upload').files[0];
+      const title=document.getElementById('wp-title').value.trim()||row.querySelector('.variant-label').value.trim()||'variant';
+      const btn=row.querySelector('.variant-upload-btn');
+      btn.disabled=true; btn.textContent='Uploading...';
+      toast('Uploading variant...','info',10000);
+      try {
+        row.querySelector('.variant-url').value=await uploadImageFile(file, title);
+        toast('Variant uploaded.','success');
+      } catch(e) {
+        toast('Error: '+e.message,'error');
+      } finally {
+        btn.disabled=false; btn.textContent='Upload';
+      }
+    });
+    row.querySelector('.btn-danger').addEventListener('click',()=>row.remove());
     document.getElementById('variant-list').appendChild(row);
   }
 
@@ -637,19 +903,28 @@
     btn.disabled=true; btn.textContent='↑ Publishing…';
     toast('Saving…','info',10000);
     const variants=collectVariants(url);
-    const wp={ id:Date.now().toString(), title, url, category, variants, tags:[...tags], description:document.getElementById('wp-desc').value.trim(), date:new Date().toISOString().split('T')[0] };
+    const metadata={
+      resolution:document.getElementById('wp-resolution').value.trim(),
+      source:document.getElementById('wp-source').value.trim(),
+      character:document.getElementById('wp-character').value.trim(),
+      theme:document.getElementById('wp-theme').value.trim(),
+      recommended:document.getElementById('wp-recommended').value.trim()
+    };
+    const wp={ id:Date.now().toString(), title, url, category, variants, tags:[...tags], description:document.getElementById('wp-desc').value.trim(), featured:document.getElementById('wp-featured').checked, metadata, date:new Date().toISOString().split('T')[0] };
     try {
       wallpapers.unshift(wp); await saveFile(dataForSave());
       toast(`"${title}" published!`,'success');
-      resetForm(); renderCategorySelect(); renderCategories(); updateCount();
+      resetForm(); renderCategorySelect(); renderManageControls(); renderCategories(); updateCount();
     } catch(e) {
       wallpapers.shift(); toast('Error: '+e.message,'error');
     } finally { btn.disabled=false; btn.textContent='↑ Publish'; }
   });
 
   function resetForm() {
-    ['wp-title','wp-url','wp-desc','wp-variant-label'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('preview-wrap').innerHTML='<span class="preview-placeholder">Image preview</span>';
+    ['wp-title','wp-url','wp-desc','wp-variant-label','wp-resolution','wp-source','wp-character','wp-theme','wp-recommended'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('wp-upload').value='';
+    document.getElementById('wp-featured').checked=false;
+    document.getElementById('preview-wrap').replaceChildren(previewPlaceholder());
     document.getElementById('variant-list').innerHTML='';
     tags.length=0; document.querySelectorAll('.tag-pill').forEach(p=>p.remove());
     document.getElementById('tag-input').value='';
@@ -659,35 +934,299 @@
   // ── List
   function renderList() {
     const c=document.getElementById('list-container');
+    const visible=getManagedWallpapers();
     if (!wallpapers.length) { c.innerHTML='<p class="empty-list">No wallpapers yet.</p>'; return; }
-    c.innerHTML=`<div class="wp-list">${wallpapers.map((w,i)=>`
-      <div class="wp-row">
-        <img class="wp-thumb" src="${esc(normalizeVariants(w)[0]?.url||w.url)}" alt="${esc(w.title)}" loading="lazy" onerror="this.style.opacity='.2'" />
-        <div>
-          <p class="wp-row-category">${esc(w.category||DEFAULT_CATEGORY)}</p>
-          <p class="wp-row-name">${esc(w.title)}</p>
-          <p class="wp-row-tags">${normalizeVariants(w).length} variant${normalizeVariants(w).length!==1?'s':''}${w.tags?.length?` · ${w.tags.map(esc).join(' · ')}`:''}</p>
+    if (!visible.length) { c.innerHTML='<p class="empty-list">No wallpapers match this view.</p>'; return; }
+    c.innerHTML=`<div class="wp-list">${visible.map(({w,i})=>`
+      <div class="wp-item">
+        <div class="wp-row">
+          <img class="wp-thumb" src="${esc(normalizeVariants(w)[0]?.url||w.url)}" alt="${esc(w.title)}" loading="lazy" onerror="this.style.opacity='.2'" />
+          <div>
+            <p class="wp-row-category">${w.featured?'Featured / ':''}${esc(w.category||DEFAULT_CATEGORY)}</p>
+            <p class="wp-row-name">${esc(w.title)}</p>
+            <p class="wp-row-tags">${normalizeVariants(w).length} variant${normalizeVariants(w).length!==1?'s':''}${w.tags?.length?` · ${w.tags.map(esc).join(' · ')}`:''}</p>
+          </div>
+          <select class="wp-category-select" data-index="${i}">
+            ${categories.map(cat=>`<option value="${esc(cat)}" ${(w.category||DEFAULT_CATEGORY)===cat?'selected':''}>${esc(cat)}</option>`).join('')}
+          </select>
+          <span class="wp-row-date">${esc(w.date||'')}</span>
+          <button class="btn btn-outline btn-sm wp-edit-btn" data-index="${i}">${editingIndex===i?'Close':'Edit'}</button>
+          <button class="btn btn-danger btn-sm wp-delete-btn" data-index="${i}">Delete</button>
         </div>
-        <select class="wp-category-select" data-index="${i}">
-          ${categories.map(cat=>`<option value="${esc(cat)}" ${(w.category||DEFAULT_CATEGORY)===cat?'selected':''}>${esc(cat)}</option>`).join('')}
-        </select>
-        <span class="wp-row-date">${esc(w.date||'')}</span>
-        <button class="btn btn-danger btn-sm" onclick="delWp(${i})">Delete</button>
+        ${editingIndex===i?editTemplate(w,i):''}
       </div>`).join('')}</div>`;
     c.querySelectorAll('.wp-category-select').forEach(select=>{
       select.addEventListener('change',()=>moveWallpaper(+select.dataset.index, select.value));
     });
+    c.querySelectorAll('.wp-edit-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>toggleEdit(+btn.dataset.index));
+    });
+    c.querySelectorAll('.wp-delete-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>delWp(+btn.dataset.index));
+    });
+    c.querySelectorAll('.edit-add-variant-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>addEditVariantRow(+btn.dataset.index));
+    });
+    c.querySelectorAll('.edit-save-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>saveEditedWallpaper(+btn.dataset.index));
+    });
+    c.querySelectorAll('.edit-cancel-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{ editingIndex=null; renderList(); });
+    });
+    wireEditVariantRemove(c);
+    wireEditVariantTools(c, editingIndex);
+    wireEditPreview(c);
+  }
+
+  function managedText(w) {
+    return [w.title, w.description, w.category, ...(w.tags||[]), ...Object.values(w.metadata||{}), ...normalizeVariants(w).flatMap(v=>[v.label, v.url])].join(' ').toLowerCase();
+  }
+
+  function getManagedWallpapers() {
+    let list=wallpapers.map((w,i)=>({w,i}));
+    if (manageCategory!=='all') list=list.filter(x=>(x.w.category||DEFAULT_CATEGORY)===manageCategory);
+    if (manageQuery) list=list.filter(x=>managedText(x.w).includes(manageQuery));
+    const byTitle=(a,b)=>a.w.title.localeCompare(b.w.title);
+    const byCategory=(a,b)=>(a.w.category||'').localeCompare(b.w.category||'')||byTitle(a,b);
+    const byDate=(a,b)=>(new Date(b.w.date||0)-new Date(a.w.date||0))||byTitle(a,b);
+    if (manageSort==='oldest') list.sort((a,b)=>(new Date(a.w.date||0)-new Date(b.w.date||0))||byTitle(a,b));
+    else if (manageSort==='title') list.sort(byTitle);
+    else if (manageSort==='category') list.sort(byCategory);
+    else if (manageSort==='featured') list.sort((a,b)=>(Number(!!b.w.featured)-Number(!!a.w.featured))||byDate(a,b));
+    else list.sort(byDate);
+    return list;
+  }
+
+  function editTemplate(w,i) {
+    const variants=normalizeVariants(w);
+    const meta=w.metadata||{};
+    return `<div class="wp-edit" data-index="${i}">
+      <div class="edit-preview">${variants[0]?.url?`<img src="${esc(variants[0].url)}" alt="${esc(w.title)} preview" />`:`<span class="preview-placeholder">Image preview</span>`}</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Title *</label>
+          <input type="text" class="edit-title" value="${esc(w.title)}" />
+        </div>
+        <div class="field">
+          <label>Category *</label>
+          <select class="edit-category">
+            ${categories.map(cat=>`<option value="${esc(cat)}" ${(w.category||DEFAULT_CATEGORY)===cat?'selected':''}>${esc(cat)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field full">
+          <label>Tags <span style="font-weight:400;color:var(--faint)">(comma separated)</span></label>
+          <input type="text" class="edit-tags" value="${esc((w.tags||[]).join(', '))}" placeholder="dark, evangelion, 4K" />
+        </div>
+        <div class="field full">
+          <label class="toggle-field">
+            <input type="checkbox" class="edit-featured" ${w.featured?'checked':''} />
+            <span>Featured wallpaper</span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Resolution</label>
+          <input type="text" class="edit-resolution" value="${esc(meta.resolution||'')}" placeholder="3840x2160" />
+        </div>
+        <div class="field">
+          <label>Source / Tool</label>
+          <input type="text" class="edit-source" value="${esc(meta.source||'')}" placeholder="Photoshop, Blender" />
+        </div>
+        <div class="field">
+          <label>Character / Franchise</label>
+          <input type="text" class="edit-character" value="${esc(meta.character||'')}" placeholder="Rei Ayanami / Evangelion" />
+        </div>
+        <div class="field">
+          <label>Color Theme</label>
+          <input type="text" class="edit-theme" value="${esc(meta.theme||'')}" placeholder="black, white, space" />
+        </div>
+        <div class="field full">
+          <label>Recommended For</label>
+          <input type="text" class="edit-recommended" value="${esc(meta.recommended||'')}" placeholder="desktop, mobile, ultrawide" />
+        </div>
+        <div class="field full">
+          <label>Description</label>
+          <textarea class="edit-desc" placeholder="A few words about this wallpaper...">${esc(w.description||'')}</textarea>
+        </div>
+        <div class="field full">
+          <label>Variants *</label>
+          <div class="edit-variant-list">
+            ${variants.map(v=>editVariantTemplate(v.label, v.url)).join('')}
+          </div>
+          <button class="btn btn-outline btn-sm edit-add-variant-btn" data-index="${i}" type="button" style="margin-top:0.75rem">Add variant</button>
+          <p class="field-hint">The first variant becomes the primary image used for cards and previews.</p>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary edit-save-btn" data-index="${i}">Save changes</button>
+        <button class="btn btn-outline edit-cancel-btn" data-index="${i}">Cancel</button>
+      </div>
+    </div>`;
+  }
+
+  function editVariantTemplate(label='', url='') {
+    return `<div class="edit-variant-row">
+      <input type="text" class="edit-variant-label" placeholder="Label" value="${esc(label)}" />
+      <input type="url" class="edit-variant-url" placeholder="https://..." value="${esc(url)}" />
+      <button class="btn btn-outline btn-sm edit-variant-up-btn" type="button">Up</button>
+      <button class="btn btn-outline btn-sm edit-variant-down-btn" type="button">Down</button>
+      <input type="file" class="edit-variant-upload" accept="image/*" />
+      <button class="btn btn-outline btn-sm edit-variant-upload-btn" type="button">Upload</button>
+      <button class="btn btn-danger btn-sm edit-remove-variant-btn" type="button">Remove</button>
+    </div>`;
+  }
+
+  function toggleEdit(i) {
+    editingIndex=editingIndex===i?null:i;
+    renderList();
+  }
+
+  function addEditVariantRow(i) {
+    const list=document.querySelector(`.wp-edit[data-index="${i}"] .edit-variant-list`);
+    if (!list) return;
+    list.insertAdjacentHTML('beforeend', editVariantTemplate('', ''));
+    wireEditVariantRemove(list);
+    wireEditVariantTools(list, i);
+    wireEditPreview(document.querySelector(`.wp-edit[data-index="${i}"]`));
+  }
+
+  function wireEditVariantRemove(root) {
+    root.querySelectorAll('.edit-remove-variant-btn').forEach(btn=>{
+      if (btn._wired) return;
+      btn._wired=true;
+      btn.addEventListener('click',()=>{
+        const box=btn.closest('.wp-edit');
+        btn.closest('.edit-variant-row')?.remove();
+        updateEditPreview(box);
+      });
+    });
+  }
+
+  function wireEditVariantTools(root, i) {
+    root.querySelectorAll('.edit-variant-up-btn').forEach(btn=>{
+      if (btn._wired) return;
+      btn._wired=true;
+      btn.addEventListener('click',()=>{
+        const row=btn.closest('.edit-variant-row');
+        if (row?.previousElementSibling) row.parentElement.insertBefore(row, row.previousElementSibling);
+        updateEditPreview(btn.closest('.wp-edit'));
+      });
+    });
+    root.querySelectorAll('.edit-variant-down-btn').forEach(btn=>{
+      if (btn._wired) return;
+      btn._wired=true;
+      btn.addEventListener('click',()=>{
+        const row=btn.closest('.edit-variant-row');
+        if (row?.nextElementSibling) row.parentElement.insertBefore(row.nextElementSibling, row);
+        updateEditPreview(btn.closest('.wp-edit'));
+      });
+    });
+    root.querySelectorAll('.edit-variant-upload-btn').forEach(btn=>{
+      if (btn._wired) return;
+      btn._wired=true;
+      btn.addEventListener('click',async()=>{
+        const row=btn.closest('.edit-variant-row');
+        const file=row.querySelector('.edit-variant-upload').files[0];
+        const title=document.querySelector(`.wp-edit[data-index="${i}"] .edit-title`)?.value.trim()||row.querySelector('.edit-variant-label').value.trim()||'variant';
+        btn.disabled=true; btn.textContent='Uploading...';
+        toast('Uploading variant...','info',10000);
+        try {
+          row.querySelector('.edit-variant-url').value=await uploadImageFile(file, title);
+          updateEditPreview(btn.closest('.wp-edit'));
+          toast('Variant uploaded.','success');
+        } catch(e) {
+          toast('Error: '+e.message,'error');
+        } finally {
+          btn.disabled=false; btn.textContent='Upload';
+        }
+      });
+    });
+  }
+
+  function wireEditPreview(root) {
+    root.querySelectorAll?.('.edit-variant-url').forEach(input=>{
+      if (input._previewWired) return;
+      input._previewWired=true;
+      input.addEventListener('input',()=>updateEditPreview(input.closest('.wp-edit')));
+    });
+  }
+
+  function updateEditPreview(box) {
+    if (!box) return;
+    const preview=box.querySelector('.edit-preview');
+    const url=box.querySelector('.edit-variant-url')?.value.trim();
+    showPreview(preview, url);
+  }
+
+  function collectEditedWallpaper(i) {
+    const box=document.querySelector(`.wp-edit[data-index="${i}"]`);
+    const old=wallpapers[i];
+    if (!box||!old) throw new Error('Editor is no longer available.');
+    const title=box.querySelector('.edit-title').value.trim();
+    const category=box.querySelector('.edit-category').value||DEFAULT_CATEGORY;
+    const description=box.querySelector('.edit-desc').value.trim();
+    const tagText=box.querySelector('.edit-tags').value;
+    const nextTags=uniq(tagText.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean));
+    const metadata={
+      resolution:box.querySelector('.edit-resolution').value.trim(),
+      source:box.querySelector('.edit-source').value.trim(),
+      character:box.querySelector('.edit-character').value.trim(),
+      theme:box.querySelector('.edit-theme').value.trim(),
+      recommended:box.querySelector('.edit-recommended').value.trim()
+    };
+    const variants=[...box.querySelectorAll('.edit-variant-row')]
+      .map(row=>({
+        label:row.querySelector('.edit-variant-label').value.trim()||'Variant',
+        url:row.querySelector('.edit-variant-url').value.trim()
+      }))
+      .filter(v=>v.url);
+    if (!title) throw new Error('Title is required.');
+    if (!variants.length) throw new Error('At least one variant URL is required.');
+    return normalizeWallpaper({ ...old, title, category, description, tags:nextTags, featured:box.querySelector('.edit-featured').checked, metadata, variants, url:variants[0].url });
+  }
+
+  async function saveEditedWallpaper(i) {
+    const old=wallpapers[i];
+    let next;
+    try {
+      next=collectEditedWallpaper(i);
+    } catch(e) {
+      toast(e.message,'error');
+      return;
+    }
+    const btn=document.querySelector(`.edit-save-btn[data-index="${i}"]`);
+    if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
+    wallpapers[i]=next;
+    toast('Saving changes...','info',10000);
+    try {
+      await saveFile(dataForSave());
+      editingIndex=null;
+      renderCategorySelect(); renderManageControls(); renderList(); renderCategories(); updateCount();
+      toast(`"${next.title}" updated.`,'success');
+    } catch(e) {
+      wallpapers[i]=old;
+      editingIndex=i;
+      renderManageControls(); renderList(); renderCategories(); updateCount();
+      toast('Error: '+e.message,'error');
+    }
   }
 
   async function delWp(i) {
     const title=wallpapers[i]?.title||'Wallpaper';
     if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     toast('Deleting…','info',10000);
+    const removed=wallpapers[i];
+    const oldEditingIndex=editingIndex;
     try {
+      editingIndex=null;
       wallpapers.splice(i,1); await saveFile(dataForSave());
       toast(`"${title}" deleted.`,'success');
-      renderList(); renderCategories(); updateCount();
-    } catch(e) { toast('Error: '+e.message,'error'); }
+      renderManageControls(); renderList(); renderCategories(); updateCount();
+    } catch(e) {
+      editingIndex=oldEditingIndex;
+      if (removed) wallpapers.splice(i,0,removed);
+      renderManageControls(); renderList(); renderCategories(); updateCount();
+      toast('Error: '+e.message,'error');
+    }
   }
 
   async function moveWallpaper(i, category) {
@@ -697,7 +1236,7 @@
     toast('Moving wallpaper…','info',10000);
     try {
       await saveFile(dataForSave());
-      renderList(); renderCategories();
+      renderManageControls(); renderList(); renderCategories();
       toast('Wallpaper moved.','success');
     } catch(e) {
       wallpapers[i].category=old;
@@ -708,6 +1247,7 @@
 
   document.getElementById('category-add-btn').addEventListener('click', addCategory);
   document.getElementById('category-name').addEventListener('keydown', e=>{ if(e.key==='Enter') addCategory(); });
+  document.getElementById('category-rename-btn').addEventListener('click', renameOrMergeCategory);
 
   async function addCategory() {
     const input=document.getElementById('category-name');
@@ -719,10 +1259,33 @@
     try {
       await saveFile(dataForSave());
       input.value='';
-      renderCategorySelect(); renderCategories();
+      renderCategorySelect(); renderManageControls(); renderCategories();
       toast(`"${name}" created.`,'success');
     } catch(e) {
       categories=categories.filter(c=>c!==name);
+      toast('Error: '+e.message,'error');
+    }
+  }
+
+  async function renameOrMergeCategory() {
+    const from=document.getElementById('category-from').value;
+    const to=document.getElementById('category-to').value.trim();
+    if (!from||!to) { toast('Choose a category and a new name.','error'); return; }
+    if (from.toLowerCase()===to.toLowerCase()) { toast('Pick a different name.','error'); return; }
+    const oldWallpapers=wallpapers.map(w=>({...w}));
+    const oldCategories=[...categories];
+    wallpapers=wallpapers.map(w=>(w.category||DEFAULT_CATEGORY)===from?{...w, category:to}:w);
+    categories=uniq(categories.map(c=>c===from?to:c));
+    toast('Saving category changes...','info',10000);
+    try {
+      await saveFile(dataForSave());
+      document.getElementById('category-to').value='';
+      renderCategorySelect(); renderManageControls(); renderList(); renderCategories();
+      toast(`"${from}" moved to "${to}".`,'success');
+    } catch(e) {
+      wallpapers=oldWallpapers;
+      categories=oldCategories;
+      renderCategorySelect(); renderManageControls(); renderCategories();
       toast('Error: '+e.message,'error');
     }
   }
@@ -752,7 +1315,7 @@
     toast('Deleting category…','info',10000);
     try {
       await saveFile(dataForSave());
-      renderCategorySelect(); renderCategories();
+      renderCategorySelect(); renderManageControls(); renderCategories();
       toast(`"${name}" deleted.`,'success');
     } catch(e) {
       categories=old;
