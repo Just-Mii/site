@@ -79,11 +79,12 @@
     .toolbar {
       padding: 1rem 2.5rem;
       display: grid;
-      grid-template-columns: minmax(180px, 1fr) auto;
+      grid-template-columns: minmax(180px, 1fr) minmax(160px, auto) auto;
       gap: 0.75rem;
       border-bottom: 1px solid var(--border);
     }
-    .search-input {
+    .search-input,
+    .sort-select {
       width: 100%;
       padding: 0.65rem 0.85rem;
       background: var(--surface);
@@ -94,7 +95,7 @@
       outline: none;
       border-radius: 2px;
     }
-    .search-input:focus { border-color: #555; }
+    .search-input:focus, .sort-select:focus { border-color: #555; }
     .view-toggle {
       display: flex;
       border: 1px solid var(--border);
@@ -214,6 +215,19 @@
       color: rgba(255,255,255,0.6);
       margin-top: 0.2rem;
     }
+    .wp-featured {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 2;
+      font-size: 0.56rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.55rem;
+      background: rgba(255,255,255,0.92);
+      color: #111;
+    }
     .wp-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
     .variant-strip {
       position: absolute;
@@ -313,6 +327,13 @@
       color: rgba(255,255,255,0.5);
       letter-spacing: 0.08em;
       text-transform: uppercase;
+    }
+    .lb-desc {
+      margin-top: 0.55rem;
+      max-width: 620px;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.72);
     }
     .lb-variants {
       display: flex;
@@ -423,6 +444,13 @@
 
   <div class="toolbar">
     <input class="search-input" id="search" type="search" placeholder="Search title, tag, category..." autocomplete="off" />
+    <select class="sort-select" id="sort">
+      <option value="featured">Featured first</option>
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="title">Title A-Z</option>
+      <option value="category">Category A-Z</option>
+    </select>
     <div class="view-toggle" aria-label="Gallery view">
       <button class="view-btn active" data-view="large">Large</button>
       <button class="view-btn" data-view="compact">Compact</button>
@@ -442,9 +470,12 @@
         <div>
           <p class="lb-title" id="lb-title"></p>
           <p class="lb-meta" id="lb-meta"></p>
+          <p class="lb-desc" id="lb-desc"></p>
           <div class="lb-variants" id="lb-variants"></div>
         </div>
         <div class="lb-actions">
+          <button class="lb-btn" id="lb-prev">Prev</button>
+          <button class="lb-btn" id="lb-next">Next</button>
           <button class="lb-btn" id="lb-copy-image">Copy Image</button>
           <button class="lb-btn" id="lb-copy-page">Copy Link</button>
           <a class="lb-btn" id="lb-dl" download>Download</a>
@@ -466,7 +497,7 @@
     requestAnimationFrame(() => document.body.classList.add('page-ready'));
 
     let all = [], categories = [], activeFilter = { type:'all', value:'all' };
-    let activeQuery = '', activeView = 'large', currentWallpaper = null, currentVariantIndex = 0;
+    let activeQuery = '', activeView = 'large', activeSort = 'featured', currentWallpaper = null, currentVariantIndex = 0;
     const DEFAULT_CATEGORY = 'Wallpapers';
 
     function esc(v='') {
@@ -481,6 +512,8 @@
           ...w,
           url: variants[0]?.url || w.url || '',
           category: w.category || DEFAULT_CATEGORY,
+          featured: !!w.featured,
+          metadata: w.metadata || {},
           variants
         };
       });
@@ -507,6 +540,21 @@
 
     function primaryVariant(w) {
       return normalizeVariants(w)[0] || { label:'Original', url:w.url };
+    }
+
+    function slug(v='wallpaper') {
+      return String(v).toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'wallpaper';
+    }
+
+    function imageExt(url='') {
+      const clean = url.split('?')[0];
+      return clean.match(/\.([a-z0-9]+)$/i)?.[1] || 'jpg';
+    }
+
+    function downloadName(w, variant) {
+      return `just-mii-${slug(w.title)}-${slug(variant.label)}.${imageExt(variant.url)}`;
     }
 
     async function load() {
@@ -570,7 +618,7 @@
           const action = e.target.closest('[data-action]');
           const w = all.find(item => itemKey(item) === card.dataset.id);
           if (!w) return;
-          if (action?.dataset.action === 'download') { e.stopPropagation(); download(primaryVariant(w).url, w.title); return; }
+          if (action?.dataset.action === 'download') { e.stopPropagation(); download(primaryVariant(w).url, downloadName(w, primaryVariant(w))); return; }
           if (action?.dataset.action === 'copy') { e.stopPropagation(); copyText(pageLink(w), 'Link copied'); return; }
           openLb(w);
         });
@@ -583,12 +631,25 @@
         : activeFilter.type === 'category'
           ? all.filter(w => (w.category||DEFAULT_CATEGORY) === activeFilter.value)
           : all.filter(w => (w.tags||[]).includes(activeFilter.value));
-      if (!activeQuery) return filtered;
-      return filtered.filter(w => searchText(w).includes(activeQuery));
+      const searched = activeQuery ? filtered.filter(w => searchText(w).includes(activeQuery)) : filtered;
+      return sortWallpapers(searched);
     }
 
     function searchText(w) {
-      return [w.title, w.description, w.category, ...(w.tags || []), ...normalizeVariants(w).map(v => v.label)].join(' ').toLowerCase();
+      return [w.title, w.description, w.category, ...(w.tags || []), ...Object.values(w.metadata || {}), ...normalizeVariants(w).map(v => v.label)].join(' ').toLowerCase();
+    }
+
+    function sortWallpapers(list) {
+      const next = [...list];
+      const byTitle = (a,b) => a.title.localeCompare(b.title);
+      const byCategory = (a,b) => (a.category || '').localeCompare(b.category || '') || byTitle(a,b);
+      const byNewest = (a,b) => (new Date(b.date || 0) - new Date(a.date || 0)) || byTitle(a,b);
+      if (activeSort === 'oldest') next.sort((a,b) => (new Date(a.date || 0) - new Date(b.date || 0)) || byTitle(a,b));
+      else if (activeSort === 'title') next.sort(byTitle);
+      else if (activeSort === 'category') next.sort(byCategory);
+      else if (activeSort === 'featured') next.sort((a,b) => (Number(!!b.featured) - Number(!!a.featured)) || byNewest(a,b));
+      else next.sort(byNewest);
+      return next;
     }
 
     function filterTitle() {
@@ -603,6 +664,7 @@
       return `
         <div class="wp-card" data-id="${esc(itemKey(w))}">
           <img src="${esc(primary.url)}" alt="${esc(w.title)}" loading="lazy" />
+          ${w.featured ? '<span class="wp-featured">Featured</span>' : ''}
           ${variantStrip(variants)}
           <div class="wp-overlay">
             <div class="wp-info">
@@ -610,6 +672,7 @@
                 <p class="wp-title">${esc(w.title)}</p>
                 <p class="wp-tag">${esc(w.category || DEFAULT_CATEGORY)}${variants.length > 1 ? ` / ${variants.length} versions` : ''}</p>
                 ${w.tags?.length ? `<p class="wp-tag">${w.tags.map(esc).join(' / ')}</p>` : ''}
+                ${metaLine(w) ? `<p class="wp-tag">${esc(metaLine(w))}</p>` : ''}
               </div>
               <div class="wp-actions">
                 <button class="wp-dl-btn" data-action="copy">Copy</button>
@@ -618,6 +681,11 @@
             </div>
           </div>
         </div>`;
+    }
+
+    function metaLine(w) {
+      const m = w.metadata || {};
+      return [m.resolution, m.recommended].filter(Boolean).join(' / ');
     }
 
     function variantStrip(variants) {
@@ -644,9 +712,10 @@
       document.getElementById('lb-img').src = variant.url;
       document.getElementById('lb-img').alt = `${w.title} - ${variant.label}`;
       document.getElementById('lb-title').textContent = w.title;
-      document.getElementById('lb-meta').textContent = [w.category, variant.label, ...(w.tags || [])].filter(Boolean).join(' / ');
+      document.getElementById('lb-meta').textContent = [w.featured ? 'Featured' : '', w.category, variant.label, ...(w.tags || []), ...Object.values(w.metadata || {})].filter(Boolean).join(' / ');
+      document.getElementById('lb-desc').textContent = w.description || '';
       const d = document.getElementById('lb-dl');
-      d.href = variant.url; d.download = `${w.title} - ${variant.label}`;
+      d.href = variant.url; d.download = downloadName(w, variant);
       document.getElementById('lb-variants').innerHTML = variants.map((v,i) =>
         `<button class="lb-btn${i===currentVariantIndex?' active':''}" data-variant="${i}">${esc(v.label)}</button>`
       ).join('');
@@ -663,6 +732,23 @@
       document.body.style.overflow = '';
       currentWallpaper = null;
       if (new URL(location.href).searchParams.has('id')) history.replaceState(null, '', location.pathname);
+    }
+
+    function moveLightbox(step) {
+      if (!currentWallpaper) return;
+      const visible = getVisibleWallpapers();
+      const current = visible.findIndex(w => itemKey(w) === itemKey(currentWallpaper));
+      if (current < 0 || !visible.length) return;
+      const next = visible[(current + step + visible.length) % visible.length];
+      openLb(next, 0, true);
+    }
+
+    function moveVariant(step) {
+      if (!currentWallpaper) return;
+      const variants = normalizeVariants(currentWallpaper);
+      if (variants.length < 2) return;
+      currentVariantIndex = (currentVariantIndex + step + variants.length) % variants.length;
+      renderLightbox();
     }
 
     function pageLink(w, absolute=true) {
@@ -706,6 +792,10 @@
       activeQuery = e.target.value.trim().toLowerCase();
       render();
     });
+    document.getElementById('sort').addEventListener('change', e => {
+      activeSort = e.target.value;
+      render();
+    });
     document.querySelectorAll('.view-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeView = btn.dataset.view;
@@ -715,13 +805,22 @@
       });
     });
     document.getElementById('lb-close').addEventListener('click', closeLb);
+    document.getElementById('lb-prev').addEventListener('click', () => moveLightbox(-1));
+    document.getElementById('lb-next').addEventListener('click', () => moveLightbox(1));
     document.getElementById('lb-copy-page').addEventListener('click', () => currentWallpaper && copyText(pageLink(currentWallpaper), 'Link copied'));
     document.getElementById('lb-copy-image').addEventListener('click', () => {
       const variant = normalizeVariants(currentWallpaper || {})[currentVariantIndex];
       if (variant) copyText(variant.url, 'Image link copied');
     });
     document.getElementById('lightbox').addEventListener('click', e => { if (e.target === e.currentTarget) closeLb(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLb();
+      if (!currentWallpaper) return;
+      if (e.key === 'ArrowLeft') moveLightbox(-1);
+      if (e.key === 'ArrowRight') moveLightbox(1);
+      if (e.key === 'ArrowUp') moveVariant(-1);
+      if (e.key === 'ArrowDown') moveVariant(1);
+    });
     document.querySelectorAll('a[href$=".html"]').forEach(a => {
       a.addEventListener('click', e => {
         if (a.target || a.href === location.href) return;
