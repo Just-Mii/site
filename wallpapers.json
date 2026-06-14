@@ -31,7 +31,15 @@
         "color"
       ],
       "description": "Sometime you just want to chill in space..... wdym no ?",
-      "date": "2026-06-14"
+      "date": "2026-06-14",
+      "featured": false,
+      "metadata": {
+        "resolution": "3840x2160",
+        "source": "GIMP",
+        "character": "Shinji Ikari / Evangelion",
+        "theme": "Color / Space / Manga",
+        "recommended": "Desktop"
+      }
     },
     {
       "id": "1779894000000",
@@ -62,7 +70,9 @@
         "black"
       ],
       "description": "",
-      "date": "2026-05-27"
+      "date": "2026-05-27",
+      "featured": false,
+      "metadata": {}
     },
     {
       "id": "1779882158149",
@@ -101,7 +111,9 @@
         "black"
       ],
       "description": "Rei Ayanami in the space... and the the LCL... and the... well, you know the fanta...",
-      "date": "2026-05-27"
+      "date": "2026-05-27",
+      "featured": false,
+      "metadata": {}
     }
   ]
 }
