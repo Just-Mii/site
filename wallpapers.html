@@ -232,14 +232,14 @@
     .variant-strip {
       position: absolute;
       left: 1.25rem;
-      right: 1.25rem;
       top: 1.25rem;
       z-index: 3;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, 44px);
       gap: 0.45rem;
-      max-height: calc(100% - 2.5rem);
-      overflow: visible;
+      width: min(236px, calc(100% - 2.5rem));
+      max-height: 112px;
+      overflow: hidden;
       opacity: 0;
       transform: translateY(-4px);
       transition: opacity 0.25s ease, transform 0.25s ease;
@@ -247,9 +247,8 @@
     }
     .wp-card:hover .variant-strip { opacity: 1; transform: none; }
     .variant-thumb {
-      width: 48px;
-      height: 30px;
-      flex: 0 0 48px;
+      width: 44px;
+      height: 28px;
       object-fit: cover;
       border: 1px solid rgba(255,255,255,0.25);
       background: #111;
