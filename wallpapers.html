@@ -235,10 +235,11 @@
       top: 1.25rem;
       z-index: 3;
       display: grid;
-      grid-template-columns: repeat(auto-fit, 76px);
-      gap: 0.55rem;
-      width: min(410px, calc(100% - 2.5rem));
-      max-height: 178px;
+      grid-template-columns: repeat(var(--variant-cols, 3), var(--variant-thumb-w, 150px));
+      gap: 0.7rem;
+      width: var(--variant-strip-w, auto);
+      max-width: calc(100% - 2.5rem);
+      max-height: calc(100% - 2.5rem);
       overflow: hidden;
       opacity: 0;
       transform: translateY(-4px);
@@ -247,8 +248,9 @@
     }
     .wp-card:hover .variant-strip { opacity: 1; transform: none; }
     .variant-thumb {
-      width: 76px;
-      height: 48px;
+      width: var(--variant-thumb-w, 150px);
+      aspect-ratio: 16/10;
+      height: auto;
       object-fit: cover;
       border: 1px solid rgba(255,255,255,0.25);
       background: #111;
@@ -635,6 +637,7 @@
           openLb(w);
         });
       });
+      requestAnimationFrame(fitVariantStrips);
     }
 
     function getVisibleWallpapers() {
@@ -703,7 +706,34 @@
     function variantStrip(variants) {
       if (variants.length < 2) return '';
       const thumbs = variants.map(v => `<img class="variant-thumb" src="${esc(v.url)}" alt="${esc(v.label)}" title="${esc(v.label)}" loading="lazy" />`).join('');
-      return `<div class="variant-strip">${thumbs}</div>`;
+      return `<div class="variant-strip" data-count="${variants.length}">${thumbs}</div>`;
+    }
+
+    function fitVariantStrips() {
+      document.querySelectorAll('.wp-card .variant-strip').forEach(strip => {
+        const card = strip.closest('.wp-card');
+        const count = Number(strip.dataset.count) || strip.children.length;
+        if (!card || count < 1) return;
+        const rect = card.getBoundingClientRect();
+        const gap = 11;
+        const maxPanelW = Math.min(rect.width - 40, Math.max(240, rect.width * 0.46));
+        const maxPanelH = Math.max(90, rect.height * 0.42);
+        let best = { cols:1, size:80 };
+
+        for (let cols = 1; cols <= count; cols++) {
+          const rows = Math.ceil(count / cols);
+          const byWidth = (maxPanelW - gap * (cols - 1)) / cols;
+          const byHeight = ((maxPanelH - gap * (rows - 1)) / rows) * 1.6;
+          const size = Math.min(byWidth, byHeight, 220);
+          if (size > best.size) best = { cols, size };
+        }
+
+        const thumbW = Math.max(72, Math.floor(best.size));
+        const stripW = Math.min(maxPanelW, best.cols * thumbW + (best.cols - 1) * gap);
+        strip.style.setProperty('--variant-cols', best.cols);
+        strip.style.setProperty('--variant-thumb-w', `${thumbW}px`);
+        strip.style.setProperty('--variant-strip-w', `${stripW}px`);
+      });
     }
 
     function metaItem(label, value) {
@@ -827,6 +857,7 @@
       activeSort = e.target.value;
       render();
     });
+    window.addEventListener('resize', () => requestAnimationFrame(fitVariantStrips));
     document.querySelectorAll('.view-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeView = btn.dataset.view;
