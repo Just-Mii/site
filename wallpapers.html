@@ -234,8 +234,12 @@
       left: 1.25rem;
       right: 1.25rem;
       top: 1.25rem;
+      z-index: 3;
       display: flex;
+      flex-wrap: wrap;
       gap: 0.45rem;
+      max-height: calc(100% - 2.5rem);
+      overflow: visible;
       opacity: 0;
       transform: translateY(-4px);
       transition: opacity 0.25s ease, transform 0.25s ease;
@@ -243,22 +247,12 @@
     }
     .wp-card:hover .variant-strip { opacity: 1; transform: none; }
     .variant-thumb {
-      width: 54px;
-      aspect-ratio: 16/10;
+      width: 48px;
+      height: 30px;
+      flex: 0 0 48px;
       object-fit: cover;
       border: 1px solid rgba(255,255,255,0.25);
       background: #111;
-    }
-    .variant-more {
-      min-width: 54px;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(0,0,0,0.45);
-      color: #fff;
-      font-size: 0.58rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
     }
     .wp-dl-btn {
       font-family: 'Montserrat', sans-serif;
@@ -323,10 +317,29 @@
     }
     .lb-meta {
       margin-top: 0.3rem;
-      font-size: 0.6rem;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.08em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .lb-meta-item {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06);
+      padding: 0.34rem 0.55rem;
+    }
+    .lb-meta-label {
+      display: block;
+      margin-bottom: 0.16rem;
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
+      color: rgba(255,255,255,0.36);
+    }
+    .lb-meta-value {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.78);
     }
     .lb-desc {
       margin-top: 0.55rem;
@@ -690,9 +703,28 @@
 
     function variantStrip(variants) {
       if (variants.length < 2) return '';
-      const thumbs = variants.slice(0, 5).map(v => `<img class="variant-thumb" src="${esc(v.url)}" alt="${esc(v.label)}" loading="lazy" />`).join('');
-      const more = variants.length > 5 ? `<span class="variant-more">+${variants.length - 5}</span>` : '';
-      return `<div class="variant-strip">${thumbs}${more}</div>`;
+      const thumbs = variants.map(v => `<img class="variant-thumb" src="${esc(v.url)}" alt="${esc(v.label)}" title="${esc(v.label)}" loading="lazy" />`).join('');
+      return `<div class="variant-strip">${thumbs}</div>`;
+    }
+
+    function metaItem(label, value) {
+      if (!value) return '';
+      return `<span class="lb-meta-item"><span class="lb-meta-label">${esc(label)}</span><span class="lb-meta-value">${esc(value)}</span></span>`;
+    }
+
+    function lightboxMeta(w, variant) {
+      const m = w.metadata || {};
+      return [
+        w.featured ? metaItem('Status', 'Featured') : '',
+        metaItem('Category', w.category),
+        metaItem('Variant', variant.label),
+        metaItem('Resolution', m.resolution),
+        metaItem('Software', m.source),
+        metaItem('Character', m.character),
+        metaItem('Theme', m.theme),
+        metaItem('For', m.recommended),
+        (w.tags || []).length ? metaItem('Tags', w.tags.join(', ')) : ''
+      ].filter(Boolean).join('');
     }
 
     function openLb(w, variantIndex=0, push=true) {
@@ -712,7 +744,7 @@
       document.getElementById('lb-img').src = variant.url;
       document.getElementById('lb-img').alt = `${w.title} - ${variant.label}`;
       document.getElementById('lb-title').textContent = w.title;
-      document.getElementById('lb-meta').textContent = [w.featured ? 'Featured' : '', w.category, variant.label, ...(w.tags || []), ...Object.values(w.metadata || {})].filter(Boolean).join(' / ');
+      document.getElementById('lb-meta').innerHTML = lightboxMeta(w, variant);
       document.getElementById('lb-desc').textContent = w.description || '';
       const d = document.getElementById('lb-dl');
       d.href = variant.url; d.download = downloadName(w, variant);
