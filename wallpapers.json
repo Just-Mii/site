@@ -119,7 +119,13 @@
       "description": "Rei Ayanami in the space... and the the LCL... and the... well, you know the fanta...",
       "date": "2026-05-27",
       "featured": false,
-      "metadata": {}
+      "metadata": {
+        "resolution": "1920x1080",
+        "source": "GIMP",
+        "character": "Rei Ayanami / Evangelion",
+        "theme": "Black / White / Space",
+        "recommended": "Desktop"
+      }
     }
   ]
 }
