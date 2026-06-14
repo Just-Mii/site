@@ -69,10 +69,16 @@
         "asuka",
         "black"
       ],
-      "description": "",
+      "description": "Sometime you just dont want to be see",
       "date": "2026-05-27",
       "featured": false,
-      "metadata": {}
+      "metadata": {
+        "resolution": "1920x1080",
+        "source": "GIMP",
+        "character": "Asuka L.S / Evangelion",
+        "theme": "Black",
+        "recommended": "Desktop"
+      }
     },
     {
       "id": "1779882158149",
