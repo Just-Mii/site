@@ -6,6 +6,33 @@
   ],
   "wallpapers": [
     {
+      "id": "1781397857965",
+      "title": "Shinji Manga",
+      "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Sans%20Text2.png",
+      "category": "Shinji Manga Space",
+      "variants": [
+        {
+          "label": "Without Text",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Sans%20Text2.png"
+        },
+        {
+          "label": "Text Down",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Text%20Bas.png"
+        },
+        {
+          "label": "Text Up",
+          "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Text%20Haut.png"
+        }
+      ],
+      "tags": [
+        "shinji",
+        "manga",
+        "color"
+      ],
+      "description": "Sometime you just want to chill in space..... wdym no ?",
+      "date": "2026-06-14"
+    },
+    {
       "id": "1779894000000",
       "title": "Hiding Asuka",
       "url": "https://raw.githubusercontent.com/Just-Mii/site/refs/heads/main/images/Complet.jpg",
